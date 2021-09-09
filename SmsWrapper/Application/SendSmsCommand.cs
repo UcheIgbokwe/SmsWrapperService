@@ -44,14 +44,17 @@ namespace SmsWrapper.Application
         /// </summary>
         public async Task HandleSms()
         {
-            SmsEvent message = new();
             try
             {
+                //Consume message from message queue.
                 //Check if sms record already exist.
                 //Verify the Sms provider using phone number.
                 //Send Sms
                 //Publish record.
                 //Save record.
+                
+                var message = await _client.Subscribe();
+
                 if (!await _db.SmsExist(message))
                 {
                     var newMessage = message.CreateModel();

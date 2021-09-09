@@ -1,7 +1,6 @@
 using System;
 using Microsoft.Extensions.Logging;
 using SmsWrapper.Infrastructure.Interfaces;
-using SmsWrapper.Model;
 
 namespace SmsWrapper.Application
 {
@@ -15,12 +14,11 @@ namespace SmsWrapper.Application
                 
                 return smsGateway;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new Exception();
             }
         }
-
         public static ISmsClient CreateClient(ISmsClient client, ILoggerFactory logger)
         {
             try
@@ -29,7 +27,7 @@ namespace SmsWrapper.Application
                 ISmsClient smsGateway = new SmsDoWork(client, _loggerFactory);
                 return smsGateway;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new Exception();
             }
