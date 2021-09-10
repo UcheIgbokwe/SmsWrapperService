@@ -11,7 +11,7 @@ namespace Tests.SmsWrapper.Tests.Fake
             return Task.CompletedTask;
         }
 
-        public Task<SmsEvent> Subscribe()
+        public Task<SmsEvent> Consume()
         {
             return Task.FromResult(new SmsEvent());
         }

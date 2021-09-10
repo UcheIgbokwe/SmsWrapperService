@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SmsWrapper.Infrastructure;
@@ -21,12 +22,6 @@ namespace SmsWrapper.Application
             _client = client;
             _logger = logger;
         }
-        // public SendSmsCommand(ILogger<SendSmsCommand> logger)
-        // {
-            
-        //     _logger = logger;
-
-        // }
 
         public IRepository Repository 
         { 
@@ -40,7 +35,6 @@ namespace SmsWrapper.Application
 
             }
         }
-
         public ISmsFactory SmsFactory 
         { 
             get
@@ -53,7 +47,6 @@ namespace SmsWrapper.Application
 
             }
         }
-
         public IMessageBrokerClient Client
         {
             get
@@ -87,7 +80,7 @@ namespace SmsWrapper.Application
         {
             try
             {
-                var message = await _client.Subscribe();
+                var message = await _client.Consume();
                 await HandleSms(message);
 
             }
@@ -114,9 +107,20 @@ namespace SmsWrapper.Application
                 {
                     var newMessage = message.CreateModel();
                     var config = _factory.CreateFactory(newMessage);
-                    await config.PostSmsAsync(newMessage);
-                    await _client.Publish(message);
-                    await _db.AddSms(message);
+
+                    var response = await config.PostSmsAsync(newMessage);
+                    if(response.StatusCode == HttpStatusCode.OK)
+                    {
+                        await _client.Publish(message);
+                        await _db.AddSms(message);
+                    }else{
+                        //repetition logic
+                        //save to failed db and retry again
+                        //This is to ensure no text message is lost.
+                        _logger.LogInformation("Message failed to send.");
+                    }
+                    
+                    
                 }
                 else
                 {

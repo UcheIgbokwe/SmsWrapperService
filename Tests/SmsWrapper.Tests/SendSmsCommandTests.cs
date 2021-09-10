@@ -38,9 +38,9 @@ namespace Tests.SmsWrapper.Tests
 
         [Fact]
         /// <summary>
-        /// Post Sms runs without retrying
+        /// Save and publish SMS when http post is successful.
         /// </summary>
-        public void ShouldHandleSmsPostWithoutRetry()
+        public void ShouldHandleSmsSaveWhenSuccessful()
         {
             var res = new SmsEventDTO{
                 Message = "ref1",
@@ -54,18 +54,22 @@ namespace Tests.SmsWrapper.Tests
 
         [Fact]
         /// <summary>
-        /// Post Sms retries when status code is not Ok
+        /// Sms record not saved or published when SMS http post fails all retries.
         /// </summary>
-        public void ShouldHandleSmsPostRetry()
+        public void ShouldHandleSmsNotSavedWhenRetryFails()
         {
-            var res = new SmsEventDTO{
+            var Id = new Guid();
+            var fakeDb = new FakeRepository();
+            var gateway = SmsGatewayFactory.CreateGateway(fakeDb, new FakeSmsFactory(new FakeSmsClient(), new NullLoggerFactory()), new FakeMessageBrokerClient(), new NullLoggerFactory());
+            Assert.NotNull(gateway);
+            var test1 = new SmsEvent{
+                MessageId = Id,
                 Message = "ref1",
                 PhoneNumber = "ref2"
             };
-            var gateway = SmsGatewayFactory.CreateClient(new FakeSmsClient(), new NullLoggerFactory());
-            Assert.NotNull(gateway);
-            var result = gateway.PostSmsAsync(res).IsCompletedSuccessfully;
-            Assert.True(result);
+            gateway.HandleSms(test1);
+
+            Assert.Equal(0, fakeDb.Data.Count);
         }
 
         [Fact]
@@ -76,7 +80,7 @@ namespace Tests.SmsWrapper.Tests
         {
             var Id = new Guid();
             var fakeDb = new FakeRepository();
-            var gateway = SmsGatewayFactory.CreateGateway(fakeDb, new FakeSmsFactory(new FakeSmsClient(), new NullLoggerFactory()), new FakeMessageBrokerClient(), new NullLoggerFactory());
+            var gateway = SmsGatewayFactory.CreateGateway(fakeDb, new FakeSmsFactory(new FakeSmsClient(HttpStatusCode.OK), new NullLoggerFactory()), new FakeMessageBrokerClient(), new NullLoggerFactory());
             Assert.NotNull(gateway);
             var test1 = new SmsEvent{
                 MessageId = Id,

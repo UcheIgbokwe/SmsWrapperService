@@ -9,15 +9,16 @@ This project is a clean architecture implementation of modelling an event-driven
 
 ## Introduction
 The Service consumes SMS request to be sent to customers from a message queue. The request is then posted via HTTP to
-a valid SMS sending service, records of the sent sms is saved to an event bus.
+a valid SMS sending service, records of the sent sms is saved and also published to an event bus.
 
-The " Send Sms" process has the following stages:
-1. HandleSms – This houses the various abstract methods for a complete process E2E. 
-2. Consume event from message queue using `Subscribe` method. This is an abstraction of connection to the message broker and creating the
+The " Send Sms Command" process has the following stages:
+1. ConsumeSms - Connects to the message queue and extracts the message to be sent.
+2. HandleSms – This recieves the extracted message and completes the process of sending and publishing. 
+3. Consume event from message queue using `Consume` method. This is an abstraction of connection to the message broker and creating the
 necessary Client object which includes routing key, queue, exchange details.
-3. Check if record exist – The `SmsExist` method checks if the sms record already exist/sent.
-4. Next is the `PostSmsAsync` method. It has a retry policy to post to the sms to the provided sms service.
-5. The successfully sent sms is saved and published.
+4. Check if record exist – The `SmsExist` method checks if the sms record already exist/sent.
+5. Next is the `PostSmsAsync` method. It has a retry policy to post to the sms to the provided sms service.
+6. If `PostSmsAsync` returns a Status Ok, the sms record is published and saved.
 
 To run the service, cd into the Project folder and run the command below:
 
