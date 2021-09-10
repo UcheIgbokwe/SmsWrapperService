@@ -14,17 +14,19 @@ namespace SmsWrapper.Application
         private readonly ISmsFactory _factory;
         private readonly IMessageBrokerClient _client;
 
-        public SendSmsCommand(IRepository db)
+        public SendSmsCommand(IRepository db, ISmsFactory factory,  IMessageBrokerClient client, ILogger<SendSmsCommand> logger)
         {
             _db = db;
-        }
-        public SendSmsCommand(ILogger<SendSmsCommand> logger, ISmsFactory factory, IMessageBrokerClient client)
-        {
-            _client = client;
             _factory = factory;
+            _client = client;
             _logger = logger;
-
         }
+        // public SendSmsCommand(ILogger<SendSmsCommand> logger)
+        // {
+            
+        //     _logger = logger;
+
+        // }
 
         public IRepository Repository 
         { 
@@ -39,22 +41,75 @@ namespace SmsWrapper.Application
             }
         }
 
+        public ISmsFactory SmsFactory 
+        { 
+            get
+            {
+                return _factory;
+            }
+
+            set
+            {
+
+            }
+        }
+
+        public IMessageBrokerClient Client
+        {
+            get
+            {
+                return _client;
+            }
+
+            set
+            {
+
+            }
+        }
+
+        public ILogger Logger 
+        {
+            get
+            {
+                return _logger;
+            }
+
+            set
+            {
+
+            }
+        }
+
         /// <summary>
-        /// This method handles the SMS lifecycle after message has been consumed by subscriber.
+        /// This method consumes message from the queue.
         /// </summary>
-        public async Task HandleSms()
+        public async Task ConsumeSms()
         {
             try
             {
-                //Consume message from message queue.
+                var message = await _client.Subscribe();
+                await HandleSms(message);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in ConsumeSms: {ex.Message}");
+                throw new Exception();
+            }
+        }
+
+        /// <summary>
+        /// This method handles the SMS lifecycle after message has been consumed by subscriber.
+        /// </summary>
+        public async Task HandleSms(SmsEvent message)
+        {
+            try
+            {
                 //Check if sms record already exist.
                 //Verify the Sms provider using phone number.
                 //Send Sms
                 //Publish record.
                 //Save record.
-                
-                var message = await _client.Subscribe();
-
                 if (!await _db.SmsExist(message))
                 {
                     var newMessage = message.CreateModel();

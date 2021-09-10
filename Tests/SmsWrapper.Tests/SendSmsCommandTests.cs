@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -19,10 +20,20 @@ namespace Tests.SmsWrapper.Tests
         /// </summary>
         public void HandleSmsImplementation()
         {
-            var fakeDB = new FakeRepository();
-            var gateway = SmsGatewayFactory.CreateGateway(fakeDB);
+            var gateway = SmsGatewayFactory.CreateGateway(new FakeRepository(), new FakeSmsFactory(), new FakeMessageBrokerClient(), new NullLoggerFactory());
             Assert.NotNull(gateway);
-            gateway.HandleSms();
+            gateway.HandleSms(new SmsEvent());
+        }
+
+        [Fact]
+        /// <summary>
+        /// Check is ConsumeSms implemented
+        /// </summary>
+        public void ConsumeSmsImplementation()
+        {
+            var gateway = SmsGatewayFactory.CreateGateway(new FakeRepository(), new FakeSmsFactory(), new FakeMessageBrokerClient(), new NullLoggerFactory());
+            Assert.NotNull(gateway);
+            gateway.ConsumeSms();
         }
 
         [Fact]
@@ -31,13 +42,11 @@ namespace Tests.SmsWrapper.Tests
         /// </summary>
         public void ShouldHandleSmsPostWithoutRetry()
         {
-            var fakeClient = new FakeSmsClient(HttpStatusCode.OK);
-            var logger = new NullLoggerFactory();
             var res = new SmsEventDTO{
                 Message = "ref1",
                 PhoneNumber = "ref2"
             };
-            var gateway = SmsGatewayFactory.CreateClient(fakeClient, logger);
+            var gateway = SmsGatewayFactory.CreateClient(new FakeSmsClient(), new NullLoggerFactory());
             Assert.NotNull(gateway);
             var result = gateway.PostSmsAsync(res).IsCompletedSuccessfully;
             Assert.True(result);
@@ -49,16 +58,40 @@ namespace Tests.SmsWrapper.Tests
         /// </summary>
         public void ShouldHandleSmsPostRetry()
         {
-            var fakeClient = new FakeSmsClient(HttpStatusCode.NoContent);
-            var logger = new NullLoggerFactory();
             var res = new SmsEventDTO{
                 Message = "ref1",
                 PhoneNumber = "ref2"
             };
-            var gateway = SmsGatewayFactory.CreateClient(fakeClient, logger);
+            var gateway = SmsGatewayFactory.CreateClient(new FakeSmsClient(), new NullLoggerFactory());
             Assert.NotNull(gateway);
             var result = gateway.PostSmsAsync(res).IsCompletedSuccessfully;
             Assert.True(result);
+        }
+
+        [Fact]
+        /// <summary>
+        /// Sms should be send duplicate record.
+        /// </summary>
+        public void ShouldHandleDuplicate()
+        {
+            var Id = new Guid();
+            var fakeDb = new FakeRepository();
+            var gateway = SmsGatewayFactory.CreateGateway(fakeDb, new FakeSmsFactory(new FakeSmsClient(), new NullLoggerFactory()), new FakeMessageBrokerClient(), new NullLoggerFactory());
+            Assert.NotNull(gateway);
+            var test1 = new SmsEvent{
+                MessageId = Id,
+                Message = "ref1",
+                PhoneNumber = "ref2"
+            };
+            var test2 = new SmsEvent{
+                MessageId = Id,
+                Message = "ref1",
+                PhoneNumber = "ref2"
+            };
+            gateway.HandleSms(test1);
+            gateway.HandleSms(test2);
+
+            Assert.Equal(1, fakeDb.Data.Count);
         }
     }
 }

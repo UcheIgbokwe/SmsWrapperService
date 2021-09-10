@@ -6,11 +6,12 @@ namespace SmsWrapper.Application
 {
     public sealed class SmsGatewayFactory
     {
-        public static ISubscribe CreateGateway(IRepository repository)
+        public static ISubscribe CreateGateway(IRepository repository, ISmsFactory smsFactory, IMessageBrokerClient client, ILoggerFactory logger)
         {
             try
             {
-                ISubscribe smsGateway = new SendSmsCommand(repository);
+                var _loggerFactory = logger.CreateLogger<SendSmsCommand>();
+                ISubscribe smsGateway = new SendSmsCommand(repository, smsFactory, client, _loggerFactory);
                 
                 return smsGateway;
             }

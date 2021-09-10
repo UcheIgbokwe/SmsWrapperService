@@ -9,6 +9,9 @@ namespace Tests.SmsWrapper.Tests.Fake
     public class FakeSmsClient : ISmsClient
     {
         private readonly HttpStatusCode _httpStatusCode;
+        public FakeSmsClient()
+        {
+        }
         public FakeSmsClient(HttpStatusCode httpStatusCode)
         {
             _httpStatusCode = httpStatusCode;

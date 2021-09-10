@@ -17,7 +17,7 @@ namespace Tests.SmsWrapper.Tests.Fake
         }
         public Task<bool> SmsExist(SmsEvent smsEvent)
         {
-            return Task.FromResult(Data.Any(w => w.MessageId != smsEvent.MessageId));
+            return Task.FromResult(Data.Any(w => w.MessageId == smsEvent.MessageId));
         }
     }
 }
