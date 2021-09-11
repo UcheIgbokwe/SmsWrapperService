@@ -63,7 +63,7 @@ namespace Tests.SmsWrapper.Tests
             var gateway = SmsGatewayFactory.CreateGateway(fakeDb, new FakeSmsFactory(new FakeSmsClient(), new NullLoggerFactory()), new FakeMessageBrokerClient(), new NullLoggerFactory());
             Assert.NotNull(gateway);
             var test1 = new SmsEvent{
-                MessageId = Id,
+                DeliveryTag = Id,
                 Message = "ref1",
                 PhoneNumber = "ref2"
             };
@@ -83,12 +83,12 @@ namespace Tests.SmsWrapper.Tests
             var gateway = SmsGatewayFactory.CreateGateway(fakeDb, new FakeSmsFactory(new FakeSmsClient(HttpStatusCode.OK), new NullLoggerFactory()), new FakeMessageBrokerClient(), new NullLoggerFactory());
             Assert.NotNull(gateway);
             var test1 = new SmsEvent{
-                MessageId = Id,
+                DeliveryTag = Id,
                 Message = "ref1",
                 PhoneNumber = "ref2"
             };
             var test2 = new SmsEvent{
-                MessageId = Id,
+                DeliveryTag = Id,
                 Message = "ref1",
                 PhoneNumber = "ref2"
             };
@@ -96,6 +96,25 @@ namespace Tests.SmsWrapper.Tests
             gateway.HandleSms(test2);
 
             Assert.Equal(1, fakeDb.Data.Count);
+        }
+
+        [Fact]
+        /// <summary>
+        /// False acknowledgement is sent to.
+        /// </summary>
+        public void ShouldHandleAcknowlegmentWhenSmsFail()
+        {
+            var Id = new Guid();
+            var fakeDb = new FakeRepository();
+            var gateway = SmsGatewayFactory.CreateGateway(fakeDb, new FakeSmsFactory(new FakeSmsClient(), new NullLoggerFactory()), new FakeMessageBrokerClient(), new NullLoggerFactory());
+            Assert.NotNull(gateway);
+            var test1 = new SmsEvent{
+                DeliveryTag = Id,
+                Message = "ref1",
+                PhoneNumber = "ref2"
+            };
+            gateway.HandleSms(test1);
+            Assert.Equal(0, fakeDb.Data.Count);
         }
     }
 }

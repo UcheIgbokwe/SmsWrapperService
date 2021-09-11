@@ -15,5 +15,10 @@ namespace Tests.SmsWrapper.Tests.Fake
         {
             return Task.FromResult(new SmsEvent());
         }
+
+        public Task Acknowledge(string deliveryTag, bool status)
+        {
+            return Task.FromResult(new {deliveryTag, status});
+        }
     }
 }

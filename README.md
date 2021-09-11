@@ -19,6 +19,8 @@ necessary Client object which includes routing key, queue, exchange details.
 4. Check if record exist – The `SmsExist` method checks if the sms record already exist/sent.
 5. Next is the `PostSmsAsync` method. It has a retry policy to post to the sms to the provided sms service.
 6. If `PostSmsAsync` returns a Status Ok, the sms record is published and saved.
+7. When an sms is sent successfully, the `Acknowledge` is called that will parse the message tag and a positive boolean to the manual acknowledgent after consume withing the client channel.
+
 
 To run the service, cd into the Project folder and run the command below:
 

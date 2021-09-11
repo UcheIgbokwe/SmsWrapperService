@@ -7,5 +7,6 @@ namespace SmsWrapper.Infrastructure.Interfaces
     {
         Task<SmsEvent> Consume();
         Task Publish<T>(T message) where T : class;
+        Task Acknowledge(string deliveryTag, bool status);
     }
 }

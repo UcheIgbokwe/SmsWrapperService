@@ -113,10 +113,13 @@ namespace SmsWrapper.Application
                     {
                         await _client.Publish(message);
                         await _db.AddSms(message);
+                        await _client.Acknowledge(message.DeliveryTag.ToString(), true);
                     }else{
                         //repetition logic
                         //save to failed db and retry again
                         //This is to ensure no text message is lost.
+                        //The manual acknowledgement returns false.
+                        await _client.Acknowledge(message.DeliveryTag.ToString(), false);
                         _logger.LogInformation("Message failed to send.");
                     }
                     
