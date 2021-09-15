@@ -59,7 +59,6 @@ namespace SmsWrapper.Application
 
             }
         }
-
         public ILogger Logger 
         {
             get
@@ -72,6 +71,7 @@ namespace SmsWrapper.Application
 
             }
         }
+
 
         /// <summary>
         /// This method consumes message from the queue.
@@ -127,6 +127,7 @@ namespace SmsWrapper.Application
                 }
                 else
                 {
+                    await _client.Acknowledge(message.DeliveryTag.ToString(), true);
                     _logger.LogInformation("Message has already been sent.");
                     return;
                 }

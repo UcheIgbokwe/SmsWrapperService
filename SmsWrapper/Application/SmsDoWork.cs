@@ -31,7 +31,7 @@ namespace SmsWrapper.Application
             catch (Exception ex)
             {
                 _logger.LogError($"Error in PostSmsAsync: {ex.Message}");
-                throw new Exception();
+                throw;
             }
         }
     }
